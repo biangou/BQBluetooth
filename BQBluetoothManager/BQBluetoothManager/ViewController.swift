@@ -12,20 +12,20 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     //蓝牙外设名字
-    let peripheralName = "Drop0305"
+    let peripheralName = "Drop_4CD09E"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupBluetooth()
-        
-        
     }
 
     //设置蓝牙
     func setupBluetooth() {
         //添加代理
         BQBluetooth.addDelegate(delegate: self)
+        BQBluetooth.serverUUID = "A002"
+        BQBluetooth.characteristicNotifyUUID = "C305"
         //开始连接
         BQBluetooth.autoConnect(peripheralName: peripheralName)
     }

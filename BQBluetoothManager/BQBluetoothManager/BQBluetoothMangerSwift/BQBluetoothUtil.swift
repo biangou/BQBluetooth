@@ -127,19 +127,19 @@ class Utils {
 
 //跳转到设置页面
 func showAlert() {
-    let alertController = UIAlertController(title: "系统提示",message: "请前往设置打开蓝牙", preferredStyle: UIAlertController.Style.alert)
-    let cancelAction = UIAlertAction(title: "取消", style: UIAlertAction.Style.cancel, handler: nil)
-    let OKAction = UIAlertAction(title: "设置", style: .default) { (action) in
-        let bluetoothUrl = URL(string: UIApplication.openSettingsURLString)
-        if let url = bluetoothUrl,UIApplication.shared.canOpenURL(url){
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        } else {
-            BQPrint("进入设置页面故障")
-        }
-    }
-    alertController.addAction(cancelAction)
-    alertController.addAction(OKAction)
-    UIApplication.shared.windows[0].rootViewController?.present(alertController, animated: true, completion: nil)
+//    let alertController = UIAlertController(title: "系统提示",message: "请前往设置打开蓝牙", preferredStyle: UIAlertController.Style.alert)
+//    let cancelAction = UIAlertAction(title: "取消", style: UIAlertAction.Style.cancel, handler: nil)
+//    let OKAction = UIAlertAction(title: "设置", style: .default) { (action) in
+//        let bluetoothUrl = URL(string: UIApplication.openSettingsURLString)
+//        if let url = bluetoothUrl,UIApplication.shared.canOpenURL(url){
+//            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+//        } else {
+//            BQPrint("进入设置页面故障")
+//        }
+//    }
+//    alertController.addAction(cancelAction)
+//    alertController.addAction(OKAction)
+//    UIApplication.shared.windows[0].rootViewController?.present(alertController, animated: true, completion: nil)
 }
 
 func BQPrint(_ string:String) {

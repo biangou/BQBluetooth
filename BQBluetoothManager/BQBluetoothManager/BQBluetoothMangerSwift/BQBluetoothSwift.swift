@@ -16,17 +16,17 @@ let BQBluetooth = BQBluetoothManager.share
 class BQBluetoothManager: NSObject {
 
     // 待连接蓝牙外设的serverUUID,默认为空
-    let serverUUID: String? = nil
+    var serverUUID: String? = nil
     // 待连接蓝牙外设的写入UUID，默认为空
-    let characteristicWriteUUID: String? = nil
+    var characteristicWriteUUID: String? = nil
     // 待连接蓝牙外设的读取UUID，默认为空
-    let characteristicReadUUID: String? = nil
+    var characteristicNotifyUUID: String? = nil
 
     // 外部调用单例
     static let share = BQBluetoothManager()
     
     //当前手机蓝牙设备状态,默认为可使用状态
-    var centralManagerState:CBManagerState = .poweredOn
+    var centralManagerState:CBManagerState = .poweredOff
     
     
     //实现该方法的代理的集合
@@ -40,6 +40,7 @@ class BQBluetoothManager: NSObject {
     //已经连接的设备的集合
     var connectedPeripherals = [BQPeripheral]()
     
+    var scanTime: Int? = 0
     
     //等待连接的设备列表
     private var waitConnectPeripheralNamesArray = [String]()
@@ -93,15 +94,33 @@ class BQBluetoothManager: NSObject {
         }
     }
     
+    ///判断一个设备是否已经蓝牙连接并可以操作
+    open func isPeripheralReady(_ peripheralName: String) -> Bool {
+        for blemodel in  BQBluetooth.connectedPeripherals {
+            if blemodel.peripheralName == peripheralName && blemodel.isRady == true{
+                return true
+            }
+        }
+        return false
+    }
+    
+    
     //MARK: - 蓝牙操作
     
     /// 蓝牙开始扫描周围外设
     func scan(time:Int? = nil) {
-        //蓝牙处于不可用状态则
-        guard centralManagerState != .poweredOn else {
+        //蓝牙处于不可用状态则展示弹窗
+        guard centralManagerState == .poweredOn else {
             showAlert()
+            self.scanTime = time
             return
         }
+        //如果当前处于扫描状态,则停止扫描
+        if centralManager.isScanning == true  {
+            BQBluetooth.stopScan()
+        }
+        
+        
         //删除之前扫描到的所有设备
         scanDevices.removeAll()
         //开始扫描
@@ -115,13 +134,14 @@ class BQBluetoothManager: NSObject {
             return
         }
         DispatchQueue.main.asyncAfter(deadline:DispatchTime.now() + .seconds(time),execute:{
-            self.stopscan()
+            self.stopScan()
         })
     }
     
     /// 蓝牙停止扫描周围外设
-    func stopscan() {
+    func stopScan() {
         centralManager.stopScan()
+        BQPrint("停止扫描")
     }
     
     /// 添加一个蓝牙外设
@@ -160,8 +180,9 @@ class BQBluetoothManager: NSObject {
         return connectedPeripherals
     }
     
-    //AMRK: - 蓝牙连接，断开，重连等操作
+    //MARK: - Rssi 读取蓝牙外设rssi
     
+    //MARK: - 蓝牙连接，断开，重连等操作
     /// 蓝牙连接操作
     /// - Parameter peripheral: 蓝牙外设
     func connect(BQPeripheral:BQPeripheral? = nil) {
@@ -227,10 +248,8 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
     //手机设备蓝牙状态变化
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if centralManagerState != central.state  {
-            //ble 发送代理
         }
-        
-        
+
         centralManagerState = central.state
         
         guard centralManagerState != .unsupported  else {
@@ -240,8 +259,10 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
         
         switch central.state {
         case .poweredOn:
+            if  self.scanTime != 0 {
+                scan(time: self.scanTime)
+            }
             print("可用")
-            
         case .resetting:
             print("重置中")
         case .unsupported:
@@ -268,7 +289,7 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
         }
         //如果扫描到的设备有当前待连接设备，则开始连接
         if  waitConnectPeripheralNamesArray.contains(peripheral.name ?? "") {
-
+            connect(peripheral: peripheral)
             waitConnectPeripheralNamesArray.remove(at: waitConnectPeripheralNamesArray.firstIndex(of: peripheral.name!)!)
         }
     }

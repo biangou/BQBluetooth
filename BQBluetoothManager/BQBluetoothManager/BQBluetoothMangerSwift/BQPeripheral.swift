@@ -14,7 +14,8 @@ class BQPeripheral: NSObject {
     var peripheralSN: String?
 
     var peripheral:CBPeripheral?
-    
+    var isRady: Bool = false //设备是否处于就绪状态
+
     
     
     
@@ -40,6 +41,9 @@ class BQPeripheral: NSObject {
     private var characteristicWrite: CBCharacteristic?
     private var characteristicNotify: CBCharacteristic?
     
+    //特征值列表
+    private var characteristicArray: [CBCharacteristic]?
+
     //传递数据
     private func send(data: Data) {
         guard characteristicWrite != nil  else {
@@ -57,8 +61,6 @@ class BQPeripheral: NSObject {
         }
         self.peripheral?.writeValue(data, for: characteristicWrite!,type: .withResponse)
     }
-    
-    
     
     init(peripheral:CBPeripheral) {
         self.peripheral = peripheral
@@ -83,18 +85,26 @@ extension BQPeripheral:CBPeripheralDelegate{
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         for characteristic in service.characteristics! {
             BQPrint("外设中的特征有：\(characteristic)")
-            if characteristic.uuid == CBUUID(string: BQBluetooth.characteristicWriteUUID!) {
-                characteristicWrite = characteristic
-            }else if characteristic.uuid == CBUUID(string: BQBluetooth.characteristicReadUUID!) {
-                characteristicNotify = characteristic
+            //记录写特征
+            if let UUIDStr = BQBluetooth.characteristicWriteUUID{
+                if characteristic.uuid == CBUUID(string: UUIDStr) {
+                    characteristicWrite = characteristic
+                }
             }
+            //记录读特征
+            if let UUIDStr = BQBluetooth.characteristicNotifyUUID{
+                if characteristic.uuid == CBUUID(string: UUIDStr) {
+                    characteristicNotify = characteristic
+
+                    // 订阅
+                    peripheral.setNotifyValue(true, for: self.characteristicNotify!)
+                }
+            }
+            //记录所有的特征值
+            self.characteristicArray?.append(characteristic)
         }
-        // 读取特征中数据
-        peripheral.readValue(for: self.characteristicNotify!)
-        // 订阅
-        peripheral.setNotifyValue(true, for: self.characteristicNotify!)
     }
-    
+
     //订阅状态
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
     
@@ -102,14 +112,15 @@ extension BQPeripheral:CBPeripheralDelegate{
             BQPrint("订阅失败: \(error)")
             return
         }
+        
         if characteristic.isNotifying {
             BQPrint("订阅成功")
             for delegate in BQBluetoothManager.share.BLEDelegateArray {
-                 //  isRady = true
+                isRady = true
                 delegate.bluetoothReady?(peripheral: peripheral)
-               }
-           } else {
-            for listener in BQBluetoothManager.share.BLEDelegateArray {
+            }
+        } else {
+            for _ in BQBluetoothManager.share.BLEDelegateArray {
             }
             BQPrint("取消订阅")
         }
@@ -118,7 +129,9 @@ extension BQPeripheral:CBPeripheralDelegate{
     
     // 接收到数据
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        
+        print("已经接收到数据")
+        for delegate in BQBluetoothManager.share.BLEDelegateArray {
+        }
     }
     
     //写入数据响应
