@@ -381,7 +381,7 @@ extension String {
     /// - Returns: data
     func toData() -> Data {
         let bytes = self.toBytes()
-        return Data(bytes: bytes)
+        return Data(bytes)
     }
 
     // 将16进制字符串转化为 [UInt8]

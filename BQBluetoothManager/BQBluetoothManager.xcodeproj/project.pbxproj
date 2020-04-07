@@ -15,9 +15,10 @@
 		970A0FCD23B0921300B9A9F2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 970A0FCB23B0921300B9A9F2 /* LaunchScreen.storyboard */; };
 		970A0FDB23B0923B00B9A9F2 /* BQBluetoothSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FD723B0923B00B9A9F2 /* BQBluetoothSwift.swift */; };
 		970A0FDC23B0923B00B9A9F2 /* BQPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */; };
-		970A0FDE23B0969400B9A9F2 /* BQBluetoothDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FDD23B0969400B9A9F2 /* BQBluetoothDelegate.swift */; };
+		970A0FDE23B0969400B9A9F2 /* BQBluetoothCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */; };
 		970A0FE023B1BBB400B9A9F2 /* BQBluetoothUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */; };
 		97B4B13923D19D6500AF60DA /* BQCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97B4B13823D19D6500AF60DA /* BQCenterManager.swift */; };
+		97CD20B0243726AF0096968B /* BQBluetoothChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,9 +32,10 @@
 		970A0FCE23B0921300B9A9F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		970A0FD723B0923B00B9A9F2 /* BQBluetoothSwift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BQBluetoothSwift.swift; sourceTree = "<group>"; };
 		970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BQPeripheral.swift; sourceTree = "<group>"; };
-		970A0FDD23B0969400B9A9F2 /* BQBluetoothDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothDelegate.swift; sourceTree = "<group>"; };
+		970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothCallback.swift; sourceTree = "<group>"; };
 		970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothUtil.swift; sourceTree = "<group>"; };
 		97B4B13823D19D6500AF60DA /* BQCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQCenterManager.swift; sourceTree = "<group>"; };
+		97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothChannel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +86,8 @@
 				970A0FD723B0923B00B9A9F2 /* BQBluetoothSwift.swift */,
 				970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */,
 				97B4B13823D19D6500AF60DA /* BQCenterManager.swift */,
-				970A0FDD23B0969400B9A9F2 /* BQBluetoothDelegate.swift */,
+				970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */,
+				97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */,
 				970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */,
 			);
 			path = BQBluetoothMangerSwift;
@@ -166,7 +169,8 @@
 				970A0FC323B0920F00B9A9F2 /* SceneDelegate.swift in Sources */,
 				970A0FE023B1BBB400B9A9F2 /* BQBluetoothUtil.swift in Sources */,
 				970A0FDB23B0923B00B9A9F2 /* BQBluetoothSwift.swift in Sources */,
-				970A0FDE23B0969400B9A9F2 /* BQBluetoothDelegate.swift in Sources */,
+				970A0FDE23B0969400B9A9F2 /* BQBluetoothCallback.swift in Sources */,
+				97CD20B0243726AF0096968B /* BQBluetoothChannel.swift in Sources */,
 				970A0FDC23B0923B00B9A9F2 /* BQPeripheral.swift in Sources */,
 				97B4B13923D19D6500AF60DA /* BQCenterManager.swift in Sources */,
 			);

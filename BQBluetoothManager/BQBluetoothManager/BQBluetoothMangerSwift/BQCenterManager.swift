@@ -9,6 +9,6 @@
 import UIKit
 import CoreBluetooth
 
-class BQCenterManager: NSObject {
+class BQCenterManager: CBCentralManager {
 
 }

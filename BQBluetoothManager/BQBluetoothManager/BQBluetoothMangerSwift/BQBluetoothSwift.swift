@@ -21,7 +21,10 @@ class BQBluetoothManager: NSObject {
     var characteristicWriteUUID: String? = nil
     // 待连接蓝牙外设的读取UUID，默认为空
     var characteristicNotifyUUID: String? = nil
-
+    // 待连接蓝牙外设的写入type，默认为.withResponse
+    var writeType: CBCharacteristicWriteType = .withResponse
+    
+    
     // 外部调用单例
     static let share = BQBluetoothManager()
     
@@ -30,7 +33,13 @@ class BQBluetoothManager: NSObject {
     
     
     //实现该方法的代理的集合
-    var BLEDelegateArray = [BLEDelegate]()
+    var channels = BQBluetoothChannel()
+    
+    //添加一个新的蓝牙回调监听
+    func addChannel(delegate:BLEDelegate) {
+        channels.addDelegate(delegate: delegate)
+    }
+    
     
     //MARK: - private
     private var centralManager: CBCentralManager!
@@ -48,51 +57,17 @@ class BQBluetoothManager: NSObject {
     //MARK: - initialize
     override init() {
         super.init()
-        centralManager = CBCentralManager.init(delegate: self, queue: .main)
+        centralManager = CBCentralManager(delegate: self, queue: .main)
 
     }
     
-//    convenience init(queue: DispatchQueue = .main ) {
-//       // centralManager = CBCentralManager.init(delegate: self, queue: queue)
-//        super.init()
-//    }
-    
+    init(queue:DispatchQueue = .main,options:[String:Any]? = nil) {
+        super.init()
+        centralManager = CBCentralManager(delegate: self, queue: queue,options: options)
+    }
     
     
     //MARK: - 使用代理方法回调时调用
-    
-    /// 添加监听接口，如果之前有就覆盖
-    /// - Parameter delegate: 蓝牙使用回调
-    func addDelegate(delegate:BLEDelegate) {
-        //判断当前是否已经实现过该代理
-        let isContain = BLEDelegateArray.contains {(BLEdelegate) -> Bool in
-                if  BLEdelegate.tag() == delegate.tag() {
-                    return true
-                }
-            return false
-        }
-
-        guard isContain == true else {
-            return
-        }
-        BLEDelegateArray.append(delegate)
-    }
-    
-    /// 清空所有代理
-    func clearDelegate() {
-        BLEDelegateArray.removeAll()
-    }
-    
-    /// 根据Tag删除指定的代理
-    /// - Parameter tag: 每个delegate的唯一标识
-    func removeDelegateByTag(tag:String) {
-        for (index,delegate) in BLEDelegateArray.enumerated() {
-            if delegate.tag() == tag {
-                BLEDelegateArray.remove(at: index)
-                break
-            }
-        }
-    }
     
     ///判断一个设备是否已经蓝牙连接并可以操作
     open func isPeripheralReady(_ peripheralName: String) -> Bool {
@@ -124,6 +99,7 @@ class BQBluetoothManager: NSObject {
         //删除之前扫描到的所有设备
         scanDevices.removeAll()
         //开始扫描
+        BQPrint("开始扫描")
         if let serverUUID = serverUUID {
             centralManager?.scanForPeripherals(withServices: [CBUUID.init(string:serverUUID)], options: nil)
         }else{
@@ -135,11 +111,15 @@ class BQBluetoothManager: NSObject {
         }
         DispatchQueue.main.asyncAfter(deadline:DispatchTime.now() + .seconds(time),execute:{
             self.stopScan()
+            
         })
     }
     
     /// 蓝牙停止扫描周围外设
     func stopScan() {
+        guard centralManager.isScanning == true else {
+            return
+        }
         centralManager.stopScan()
         BQPrint("停止扫描")
     }
@@ -234,8 +214,28 @@ class BQBluetoothManager: NSObject {
     /// - Parameter data: 发送给蓝牙外设的数据（也可以说是命令）
     /// - Parameter serviceUUID: 服务UUID，咨询硬件工程师提供  nil时会向默认serviceUUID发送
     /// - Parameter writeUUID: 写入UUID，咨询硬件工程师提供    nil时会向默认writeUUID发送
-    func writeData(peripheral:BQPeripheral? = nil, data:Data,serviceUUID: String? = nil,writeUUID:String? = nil) {
-        //peripheral?.sendAsync(data: data.)
+    func writeData(peripheral:BQPeripheral? = nil, data:Data,serviceUUID: String? = nil,writeUUID:String? = nil,type:CBCharacteristicWriteType? = nil) {
+        
+        //向给定设备写入数据，如果没有则向已连接设备的第一个设备写入数据
+        let sendPeripheral:BQPeripheral
+        if let peripheral = peripheral {
+            sendPeripheral = peripheral
+        }else {
+            if connectedPeripherals.count != 0 {
+                sendPeripheral = connectedPeripherals.first!
+            }else {
+                return
+            }
+        }
+        
+        //如果该设备不处于就绪状态则直接返回 ，通常见于连接成功但还没有订阅完成或订阅失败
+        guard sendPeripheral.isRady == true else{
+            return
+        }
+
+        assert(writeUUID == nil || BQBluetooth.characteristicWriteUUID == nil , "characteristicWriteUUID Could not be nil")
+        //向设备写入数据
+        sendPeripheral.send(data: data,serviceUUID: serviceUUID,writeUUID: writeUUID, type: type)
     }
     
     
@@ -259,10 +259,11 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
         
         switch central.state {
         case .poweredOn:
+            print("可用")
+
             if  self.scanTime != 0 {
                 scan(time: self.scanTime)
             }
-            print("可用")
         case .resetting:
             print("重置中")
         case .unsupported:
@@ -283,7 +284,7 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
         //加入已经发现的设备列表
         if(!scanDevices.contains(peripheral)) {
             scanDevices.append(peripheral)
-            for delegate in BLEDelegateArray{
+            for delegate in channels.delegateArray{
                 delegate.bluetoothNewPeripheral?(peripheral: peripheral, RSSI: RSSI, localName: advertisementData["kCBAdvDataLocalName"] as! String)
             }
         }
@@ -298,7 +299,7 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         BQPrint("\(peripheral.name ?? "暂无名字") 连接成功")
         //停止扫描
-        centralManager.stopScan()
+        stopScan()
         addPeripheral(peripheral: BQPeripheral(peripheral: peripheral))
         //继续发现服务
         //如果只需要扫描某种 serverUUID的蓝牙外设
@@ -308,7 +309,8 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
             //扫描所有蓝牙外设
             peripheral.discoverServices(nil)
         }
-        for delegate in BLEDelegateArray{
+        
+        for delegate in channels.delegateArray{
             delegate.bluetoothPeripheralStateChange?(peripheral: peripheral, state: .connnetSuccesed)
         }
     }
@@ -316,7 +318,7 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
     //连接失败
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         BQPrint("\(peripheral.name ?? "暂无名字") 连接失败")
-        for delegate in BLEDelegateArray{
+        for delegate in channels.delegateArray{
             delegate.bluetoothPeripheralStateChange?(peripheral: peripheral, state: .connnetFaild)
         }
     }
@@ -326,7 +328,7 @@ extension BQBluetoothManager: CBCentralManagerDelegate{
         BQPrint("\(peripheral.name ?? "暂无名字") 断开连接")
         removePeripheral(peripheral: BQPeripheral(peripheral: peripheral))
         //继续发现服务
-        for delegate in BLEDelegateArray{
+        for delegate in channels.delegateArray{
             delegate.bluetoothPeripheralStateChange?(peripheral: peripheral, state: .disConnnet)
         }
     }

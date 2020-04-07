@@ -12,28 +12,33 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     //蓝牙外设名字
-    let peripheralName = "Drop_4CD09E"
+    let peripheralName = "Drop_6853EE"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupBluetooth()
+
     }
 
     //设置蓝牙
     func setupBluetooth() {
         //添加代理
-        BQBluetooth.addDelegate(delegate: self)
+        BQBluetooth.addChannel(delegate: self)
         BQBluetooth.serverUUID = "A002"
+        BQBluetooth.characteristicWriteUUID = "C304"
         BQBluetooth.characteristicNotifyUUID = "C305"
+
         //开始连接
         BQBluetooth.autoConnect(peripheralName: peripheralName)
     }
 
     @IBAction func sendData(_ sender: UIButton) {
-        let data = Data()
+        let data = Data([0x66,0xee,0x00,0x05,0x02,0x16,0x55,0x71,0xA0])
         BQBluetooth.writeData(data: data)
-        
+    }
+    @IBAction func disConnectAction(_ sender: UIButton) {
+        BQBluetooth.disConnect(peripheralName: peripheralName)
     }
 }
 
@@ -41,18 +46,16 @@ extension ViewController: BLEDelegate{
     func tag() -> String {
         return "ViewController"
     }
-    
+     
     func bluetoothPeripheralStateChange(peripheral: CBPeripheral, state: peripheralStatus) {
-        print("设备名为\(peripheral.name ?? "没有名字") 状态变为\(state)")
         switch state {
         case .connnetSuccesed:
-            print("")
+            print("连接成功")
         case .connnetFaild:
-            print("")
+            print("连接失败")
         case .disConnnet:
-            print("")
-        default:
-            break
+            print("断开链接")
+        default:break
         }
     }
     
@@ -63,7 +66,7 @@ extension ViewController: BLEDelegate{
     }
     
     //收到的数据在此处理
-    func bluetoothPeriphe(_ peripheral: CBPeripheral, didReadData data: [Any]){
-        print("收到的数据为 \(data)")
+    func bluetoothPeripheral(_ peripheral: CBPeripheral, didReadData data: Data){
+        print(data)
     }
 }
