@@ -17,7 +17,7 @@
 		970A0FDC23B0923B00B9A9F2 /* BQPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */; };
 		970A0FDE23B0969400B9A9F2 /* BQBluetoothCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */; };
 		970A0FE023B1BBB400B9A9F2 /* BQBluetoothUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */; };
-		97B4B13923D19D6500AF60DA /* BQCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97B4B13823D19D6500AF60DA /* BQCenterManager.swift */; };
+		97B4B13923D19D6500AF60DA /* BQCentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97B4B13823D19D6500AF60DA /* BQCentralManager.swift */; };
 		97CD20B0243726AF0096968B /* BQBluetoothChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */; };
 /* End PBXBuildFile section */
 
@@ -34,7 +34,7 @@
 		970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BQPeripheral.swift; sourceTree = "<group>"; };
 		970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothCallback.swift; sourceTree = "<group>"; };
 		970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothUtil.swift; sourceTree = "<group>"; };
-		97B4B13823D19D6500AF60DA /* BQCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQCenterManager.swift; sourceTree = "<group>"; };
+		97B4B13823D19D6500AF60DA /* BQCentralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQCentralManager.swift; sourceTree = "<group>"; };
 		97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BQBluetoothChannel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -84,8 +84,8 @@
 			isa = PBXGroup;
 			children = (
 				970A0FD723B0923B00B9A9F2 /* BQBluetoothSwift.swift */,
+				97B4B13823D19D6500AF60DA /* BQCentralManager.swift */,
 				970A0FD823B0923B00B9A9F2 /* BQPeripheral.swift */,
-				97B4B13823D19D6500AF60DA /* BQCenterManager.swift */,
 				970A0FDD23B0969400B9A9F2 /* BQBluetoothCallback.swift */,
 				97CD20AF243726AF0096968B /* BQBluetoothChannel.swift */,
 				970A0FDF23B1BBB400B9A9F2 /* BQBluetoothUtil.swift */,
@@ -172,7 +172,7 @@
 				970A0FDE23B0969400B9A9F2 /* BQBluetoothCallback.swift in Sources */,
 				97CD20B0243726AF0096968B /* BQBluetoothChannel.swift in Sources */,
 				970A0FDC23B0923B00B9A9F2 /* BQPeripheral.swift in Sources */,
-				97B4B13923D19D6500AF60DA /* BQCenterManager.swift in Sources */,
+				97B4B13923D19D6500AF60DA /* BQCentralManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,7 +319,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BMSANW97RZ;
 				INFOPLIST_FILE = BQBluetoothManager/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -338,7 +338,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BMSANW97RZ;
 				INFOPLIST_FILE = BQBluetoothManager/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

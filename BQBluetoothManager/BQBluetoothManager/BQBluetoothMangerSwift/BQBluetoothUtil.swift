@@ -142,7 +142,11 @@ func showAlert() {
 //    UIApplication.shared.windows[0].rootViewController?.present(alertController, animated: true, completion: nil)
 }
 
+//控制台日志打印
 func BQPrint(_ string:String) {
+    guard BQBluetooth.isLogEnabled == true else{
+        return
+    }
     print(string)
 }
 
@@ -184,7 +188,7 @@ extension Data {
     }
     
     func to<T>(type: T.Type) -> T {
-        return self.withUnsafeBytes { $0.pointee }
+        return self.withUnsafeBytes {$0.baseAddress!.bindMemory(to: T.self, capacity: 4).pointee}
     }
     
     func toString() -> String {

@@ -12,13 +12,12 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     //蓝牙外设名字
-    let peripheralName = "Drop_6853EE"
-    
+    let peripheralName = "Drop_4CD09E"
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupBluetooth()
-
     }
 
     //设置蓝牙
@@ -28,15 +27,31 @@ class ViewController: UIViewController {
         BQBluetooth.serverUUID = "A002"
         BQBluetooth.characteristicWriteUUID = "C304"
         BQBluetooth.characteristicNotifyUUID = "C305"
-
         //开始连接
         BQBluetooth.autoConnect(peripheralName: peripheralName)
+        
+        
+        //block回调
+        BQBluetooth.blockOnPeripheralStateChange { (peripheral, state) in
+                    switch state {
+                    case .connnetSuccesed:
+                        print("sss 连接成功")
+                    case .connnetFaild:
+                        print("sss 连接失败")
+                    case .disConnnet:
+                        print("sss 断开链接")
+                    default:break
+                    }
+        }
+        
+        
     }
 
     @IBAction func sendData(_ sender: UIButton) {
         let data = Data([0x66,0xee,0x00,0x05,0x02,0x16,0x55,0x71,0xA0])
         BQBluetooth.writeData(data: data)
     }
+    
     @IBAction func disConnectAction(_ sender: UIButton) {
         BQBluetooth.disConnect(peripheralName: peripheralName)
     }
@@ -47,17 +62,24 @@ extension ViewController: BLEDelegate{
         return "ViewController"
     }
      
+    //设备连接状态改变
     func bluetoothPeripheralStateChange(peripheral: CBPeripheral, state: peripheralStatus) {
-        switch state {
-        case .connnetSuccesed:
-            print("连接成功")
-        case .connnetFaild:
-            print("连接失败")
-        case .disConnnet:
-            print("断开链接")
-        default:break
-        }
+//        switch state {
+//        case .connnetSuccesed:
+//            print("连接成功")
+//        case .connnetFaild:
+//            print("连接失败")
+//        case .disConnnet:
+//            print("断开链接")
+//        default:break
+//        }
     }
+    
+    // 手机端蓝牙状态改变
+    func bluetoothCentralManagerDidUpdateState(states: CBManagerState) {
+      //  print(states.rawValue)
+    }
+    
     
     //收到此回调后代表该peripheral可以发送数据
     func bluetoothReady(peripheral: CBPeripheral) {
@@ -67,6 +89,6 @@ extension ViewController: BLEDelegate{
     
     //收到的数据在此处理
     func bluetoothPeripheral(_ peripheral: CBPeripheral, didReadData data: Data){
-        print(data)
+        print("\(data.toString())")
     }
 }

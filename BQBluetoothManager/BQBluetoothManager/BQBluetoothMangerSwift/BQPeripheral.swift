@@ -17,10 +17,17 @@ class BQPeripheral: NSObject {
     var isRady: Bool = false //设备是否处于就绪状态
     var writeType:CBCharacteristicWriteType = .withResponse
     
+    /// Intance of CentralManager which is used to the bluetooth communication
+    //public unowned let manager: CBCentralManager
     
+    /// Advertisement data of scanned peripheral
+    public let advertisementData: [String: Any]
+    
+    /// Scanned peripheral's RSSI value.
+    public let rssi: NSNumber
     
     //单次传输数据包 单位字节
-    let MAX_COUNT = 2048
+    //let MAX_COUNT = 2048
 
     
     //AMRK: - 蓝牙使用方法
@@ -43,6 +50,21 @@ class BQPeripheral: NSObject {
         }
     }
 
+    /// 监听蓝牙外设返回数据
+    /// - Parameter serviceUUID: serviceUUID
+    /// - Parameter notifyUUID: notifyUUID
+ 
+    func notify(serviceUUID:String?,notifyUUID:String?){
+        let characteristic = searchNotifyCharacteristic(serviceUUID: serviceUUID, notifyUUID: notifyUUID)
+        
+        //没有符合条件的特征值则直接返回
+        guard let _ = characteristic else{
+            return
+        }
+        peripheral!.setNotifyValue(true, for: characteristic!)
+    }
+    
+    
     //MARK: - private
     //设备中的所有服务
     private var serviceDic: [String:CBService] = [:]
@@ -106,13 +128,13 @@ class BQPeripheral: NSObject {
         //从储存的特征值列表中根据给定特征值的UUID找出符合的特征值
         return  characteristicArray.filter { $0.uuid == CBUUID(string: operationUUID)}.first
     }
-
     
-    init(peripheral:CBPeripheral) {
+    init(_ peripheral:CBPeripheral,_ advertisementData:[String:Any] ,_ rssi: NSNumber) {
         self.peripheral = peripheral
+        self.advertisementData = advertisementData
+        self.rssi = rssi
         super.init()
         peripheral.delegate = self
-
     }
 }
 
@@ -137,7 +159,7 @@ extension BQPeripheral:CBPeripheralDelegate{
     //发现特征
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         var array: [CBCharacteristic] = []
-        print("ssssss")
+        
         for characteristic in service.characteristics! {
             BQPrint("外设中的特征有：\(characteristic)")
             //记录写特征
@@ -185,7 +207,7 @@ extension BQPeripheral:CBPeripheralDelegate{
     
     // 接收到数据
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        BQPrint("已经接收到数据")
+        BQPrint("\(peripheral.name ?? "nil name") 接受返回数据")
         //返回数据如果为nil直接返回
         guard characteristic.value != nil else {
             return
@@ -198,8 +220,7 @@ extension BQPeripheral:CBPeripheralDelegate{
     
     //写入数据响应
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
-        BQPrint("已经写入数据")
-
+        BQPrint("\(peripheral.name ?? "nil name") 写入数据")
     }
     
 }

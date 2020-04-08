@@ -54,16 +54,19 @@ import CoreBluetooth
 
 //MARK: - block
 
+//MARK:  常用方法
+
+/// 状态变更
+/// - Parameter peripheral: 当前状态变更的设备
+/// - Parameter status: 变更的状态
+typealias BQPeripheralStateChangeBlock = (_ peripheral: CBPeripheral,_ state:peripheralStatus) -> Void
+
+
 class BQBlock: NSObject {
     // 用来区分不同的代理 ，通常用当前类的类名代替
     typealias BQTagBlock = () -> String
 
-    //MARK:  常用方法
-    
-    /// 状态变更
-    /// - Parameter peripheral: 当前状态变更的设备
-    /// - Parameter status: 变更的状态
-    typealias BQPeripheralStateChangeBlock = (_ peripheral: CBPeripheral,_ state:peripheralStatus) -> Void
+
      
     /// 发现新外设
     /// - Parameter peripheral: 蓝牙外设
@@ -83,7 +86,7 @@ class BQBlock: NSObject {
     
     
     //蓝牙外设状态改变
-    var blockOnPeripheralStateChange: BQBluetoothChannel?
+    var blockOnPeripheralStateChange: BQPeripheralStateChangeBlock?
     //发现新外设
     var blockOnNewPeripheral: BQNewPeripheralBlock?
     //新外设已就绪，可以发送数据
