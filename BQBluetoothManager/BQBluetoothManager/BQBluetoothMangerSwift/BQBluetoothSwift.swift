@@ -49,7 +49,7 @@ class BQBluetoothManager: NSObject {
     
     //MARK: - private
     private var centralManager: BQCentralManager!
-    private var bluetoothCahnnel =  BQBluetoothChannel()
+    var bluetoothChannel =  BQBluetoothChannel()
     
     //返回可用设备
     func validPeripheral(_ BQPeripheral:BQPeripheral?) -> BQPeripheral? {
@@ -74,18 +74,29 @@ class BQBluetoothManager: NSObject {
     }
     
     
-    //MARK: - 使用代理方法回调时调用
+    //MARK: - 回调数据
     
-    
-    /// 蓝牙外设状态改变的回调
+    /// 蓝牙外设状态改变
     /// - Parameter channel: 频道名称
     /// - Parameter block: block
     func blockOnPeripheralStateChange(_ channel: String? = nil,block: @escaping BQPeripheralStateChangeBlock)  {
-        bluetoothCahnnel.currentChannelCallback().blockOnPeripheralStateChange = block
+        bluetoothChannel.currentChannelCallback().blockOnPeripheralStateChange = block
     }
     
+    /// 发现新外设
+    func blockOnNewPeripheral(_ channel: String? = nil,block: @escaping BQNewPeripheralBlock)  {
+        bluetoothChannel.currentChannelCallback().blockOnNewPeripheral = block
+    }
     
-    
+    /// 新外设已就绪，可以发送数据
+    func blockOnPeripheralReady(_ channel: String? = nil,block: @escaping BQPeripheralReadyBlock)  {
+        bluetoothChannel.currentChannelCallback().blockOnPeripheralReady = block
+    }
+
+    /// 蓝牙外设收到的数据
+    func blockOnBluetoothReadData(_ channel: String? = nil,block: @escaping BQbluetoothReadDataBlock)  {
+        bluetoothChannel.currentChannelCallback().blockOnBluetoothReadData = block
+    }
     
     ///判断一个设备是否已经蓝牙连接并可以操作
     open func isPeripheralReady(_ peripheralName: String) -> Bool {
@@ -168,9 +179,9 @@ class BQBluetoothManager: NSObject {
         }
         
         //如果该设备不处于就绪状态则直接返回 ，通常见于连接成功但还没有订阅完成或订阅失败
-        guard sendPeripheral!.isRady == true else{
-            return
-        }
+//        guard sendPeripheral!.isRady == true else{
+//            return
+//        }
 
         assert(writeUUID == nil || BQBluetooth.characteristicWriteUUID == nil , "characteristicWriteUUID Could not be nil")
         //向设备写入数据

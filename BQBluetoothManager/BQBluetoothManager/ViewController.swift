@@ -23,33 +23,57 @@ class ViewController: UIViewController {
     //设置蓝牙
     func setupBluetooth() {
         //添加代理
-        BQBluetooth.addChannel(delegate: self)
-        BQBluetooth.serverUUID = "A002"
-        BQBluetooth.characteristicWriteUUID = "C304"
+       // BQBluetooth.addChannel(delegate: self)
+       // BQBluetooth.serverUUID = "A002"
+       // BQBluetooth.characteristicWriteUUID = "C304"
         BQBluetooth.characteristicNotifyUUID = "C305"
         //开始连接
         BQBluetooth.autoConnect(peripheralName: peripheralName)
         
         
         //block回调
+        
+        //蓝牙设备改变
+        /// 连接成功后一般情况下不能立即向外设发送数据
+        /// 通常会在建立外设对应特征值的监听后发送数据，以避免收不到返回数据等意外发生 这一步放在blockOnPeripheralReady
+        ///
         BQBluetooth.blockOnPeripheralStateChange { (peripheral, state) in
-                    switch state {
-                    case .connnetSuccesed:
-                        print("sss 连接成功")
-                    case .connnetFaild:
-                        print("sss 连接失败")
-                    case .disConnnet:
-                        print("sss 断开链接")
-                    default:break
-                    }
+            let peripherlName = peripheral.name ?? "nil name"
+            
+            switch state {
+            case .connnetSuccesed:
+                print("\(peripherlName) 连接成功")
+            case .connnetFaild:
+                print("\(peripherlName) 连接失败")
+            case .disConnnet:
+                print("\(peripherlName) 断开链接")
+            default:break
+            }
         }
         
+        BQBluetooth.blockOnNewPeripheral { (peripheral, advertisementData, rssi) in
+            let peripherlName = peripheral.name ?? "nil name"
+            print("发现新设备 \(peripherlName) advertisementData \(advertisementData) rssi \(rssi)")
+        }
+        
+        //监听已就绪
+        BQBluetooth.blockOnPeripheralReady { (peripheral) in
+            let peripherlName = peripheral.name ?? "nil name"
+            print("已就绪 \(peripherlName)")
+        }
+        
+        //收到数据
+        BQBluetooth.blockOnBluetoothReadData { (peripheral, data) in
+            print(data.toString())
+        }
         
     }
 
     @IBAction func sendData(_ sender: UIButton) {
         let data = Data([0x66,0xee,0x00,0x05,0x02,0x16,0x55,0x71,0xA0])
-        BQBluetooth.writeData(data: data)
+       // BQBluetooth.writeData(data: data)
+        BQBluetooth.writeData(peripheral: nil, data: data, serviceUUID: nil, writeUUID: "C304")
+    
     }
     
     @IBAction func disConnectAction(_ sender: UIButton) {
@@ -82,7 +106,7 @@ extension ViewController: BLEDelegate{
     
     
     //收到此回调后代表该peripheral可以发送数据
-    func bluetoothReady(peripheral: CBPeripheral) {
+    func bluetoothPeripheralReady(peripheral: CBPeripheral) {
         print("\(peripheral.name ?? "没有名字")已经就绪，可以发送数据")
         
     }

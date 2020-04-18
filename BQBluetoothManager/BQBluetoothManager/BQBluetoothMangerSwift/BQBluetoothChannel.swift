@@ -60,9 +60,8 @@ class BQBluetoothChannel: NSObject {
         currentChannel = channel
     }
     
-    func currentChannelCallback(_ channel: String? = nil) -> BQBlock{
-        
-        return BQBlock()
+    func currentChannelCallback(_ channel: String? = "default") -> BQBlock{
+        return blockArray[channel!]!
     }
     
 }

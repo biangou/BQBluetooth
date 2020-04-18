@@ -31,14 +31,13 @@ import CoreBluetooth
     /// 发现新外设
     /// - Parameter peripheral: 蓝牙外设
     /// - Parameter RSSI: 蓝牙外设信号强度
-    /// - Parameter localName: advertisementData["kCBAdvDataLocalName"] 名字
+    /// - Parameter advertisementData: 蓝牙外设广播附带数据
     /// 有时候外设修改名字后因为缓存原因 peripheral.name不会变动，此时可以用advertisementData["kCBAdvDataLocalName"]来区分设备
-    @objc optional func bluetoothNewPeripheral(peripheral:CBPeripheral,RSSI:NSNumber,localName:String)
-    
-    
+    @objc optional func bluetoothNewPeripheral(peripheral:CBPeripheral,advertisementData:[String : Any],RSSI:NSNumber)
+        
     /// 外设已经就绪，可以向外设发送指令
     /// - Parameter peripheral: 蓝牙外设
-    @objc optional func bluetoothReady(peripheral:CBPeripheral)
+    @objc optional func bluetoothPeripheralReady(peripheral:CBPeripheral)
     
     
     /// 蓝牙外设收到的数据
@@ -49,7 +48,6 @@ import CoreBluetooth
     
     @objc optional func bluetoothCentralManagerDidUpdateState(states: CBManagerState)
 
-    
 }
 
 //MARK: - block
@@ -61,37 +59,32 @@ import CoreBluetooth
 /// - Parameter status: 变更的状态
 typealias BQPeripheralStateChangeBlock = (_ peripheral: CBPeripheral,_ state:peripheralStatus) -> Void
 
+/// 发现新外设
+/// - Parameter peripheral: 蓝牙外设
+/// - Parameter RSSI: 蓝牙外设信号强度
+/// - Parameter localName:  蓝牙外设广播附带数据
+/// 有时候外设修改名字后因为缓存原因 peripheral.name不会变动，此时可以用advertisementData["kCBAdvDataLocalName"]来区分设备
+typealias BQNewPeripheralBlock = (_ peripheral: CBPeripheral,_ advertisementData:[String : Any], _ RSSI:NSNumber) -> Void
+
+/// 外设已经就绪，可以向外设发送指令
+/// - Parameter peripheral: 蓝牙外设
+typealias BQPeripheralReadyBlock = (_ peripheral: CBPeripheral) -> Void
+
+/// 蓝牙外设收到的数据
+/// - Parameter data: 收到的数据
+typealias BQbluetoothReadDataBlock = (_ peripheral: CBPeripheral,_ data: Data) -> Void
 
 class BQBlock: NSObject {
     // 用来区分不同的代理 ，通常用当前类的类名代替
     typealias BQTagBlock = () -> String
 
-
-     
-    /// 发现新外设
-    /// - Parameter peripheral: 蓝牙外设
-    /// - Parameter RSSI: 蓝牙外设信号强度
-    /// - Parameter localName: advertisementData["kCBAdvDataLocalName"] 名字
-    /// 有时候外设修改名字后因为缓存原因 peripheral.name不会变动，此时可以用advertisementData["kCBAdvDataLocalName"]来区分设备
-    typealias BQNewPeripheralBlock = (_ peripheral: CBPeripheral,_ RSSI:NSNumber,_ localName:String) -> Void
-
-    /// 外设已经就绪，可以向外设发送指令
-    /// - Parameter peripheral: 蓝牙外设
-    typealias BQbluetoothReadyBlock = (_ peripheral: CBPeripheral) -> Void
-
-    
-    /// 蓝牙外设收到的数据
-    /// - Parameter data: 收到的数据
-    typealias BQbluetoothReadDataBlock = (_ peripheral: CBPeripheral,_ data: Data) -> Void
-    
-    
     //蓝牙外设状态改变
     var blockOnPeripheralStateChange: BQPeripheralStateChangeBlock?
     //发现新外设
     var blockOnNewPeripheral: BQNewPeripheralBlock?
     //新外设已就绪，可以发送数据
-    var blockOnbluetoothReady: BQbluetoothReadyBlock?
+    var blockOnPeripheralReady: BQPeripheralReadyBlock?
     //蓝牙外设收到的数据
-    var blockOnluetoothReadData: BQbluetoothReadDataBlock?
+    var blockOnBluetoothReadData: BQbluetoothReadDataBlock?
 }
     

@@ -195,8 +195,9 @@ extension BQPeripheral:CBPeripheralDelegate{
             BQPrint("订阅成功")
             for delegate in BQBluetooth.channels.delegateArray {
                 isRady = true
-                delegate.bluetoothReady?(peripheral: peripheral)
+                delegate.bluetoothPeripheralReady?(peripheral: peripheral)
             }
+            BQBluetooth.bluetoothChannel.currentChannelCallback().blockOnPeripheralReady?(peripheral)
         } else {
             for _ in BQBluetooth.channels.delegateArray {
             }
@@ -216,6 +217,7 @@ extension BQPeripheral:CBPeripheralDelegate{
         BQBluetooth.channels.delegateArray.forEach { (delegate) in
             delegate.bluetoothPeripheral?(peripheral, didReadData: characteristic.value!)
         }
+        BQBluetooth.bluetoothChannel.currentChannelCallback().blockOnBluetoothReadData?(peripheral,characteristic.value!)
     }
     
     //写入数据响应
