@@ -15,6 +15,11 @@ import CoreBluetooth
     case disConnnet = 2
 }
 
+enum BQHandlerResult {
+    case success
+    case failure(BQError)
+}
+
 //MARK: - delegate
 @objc protocol BLEDelegate:NSObjectProtocol {
     // 用来区分不同的代理 ，通常用当前类的类名代替
@@ -32,7 +37,7 @@ import CoreBluetooth
     /// - Parameter peripheral: 蓝牙外设
     /// - Parameter RSSI: 蓝牙外设信号强度
     /// - Parameter advertisementData: 蓝牙外设广播附带数据
-    /// 有时候外设修改名字后因为缓存原因 peripheral.name不会变动，此时可以用advertisementData["kCBAdvDataLocalName"]来区分设备
+    /// 有时候外设修改名字后因为缓存原因 peripheral.name不会变动，此时可以用advertisementData[CBAdvertisementDataLocalNameKey]来区分设备
     @objc optional func bluetoothNewPeripheral(peripheral:CBPeripheral,advertisementData:[String : Any],RSSI:NSNumber)
         
     /// 外设已经就绪，可以向外设发送指令
@@ -51,6 +56,24 @@ import CoreBluetooth
 }
 
 //MARK: - block
+
+//筛选设备 当 发现或 连接的时候
+typealias BQFilterPeripheralHandler = (_ peripheral: BQPeripheral) -> Bool
+
+//连接设备回调
+typealias BQConnectPeripheralCompletionHandler = (_ peripheral: BQPeripheral?, _ result: BQHandlerResult) -> Void
+
+//扫描设备进度回调
+typealias BQScanProgressHandler = (_ newPeripheral: BQPeripheral,  _ discoveryedPeripherals: [BQPeripheral]) -> Void
+
+//扫描设备完成回调
+typealias BQScanCompletionHandler = (_ discoveryedPeripherals: [BQPeripheral]?, _ error: BQError?) -> Void
+
+//发送数据后回调
+typealias BQSendDataCompletionHandler = (_ peripheral: BQPeripheral?, _ data: Data, _ error: BQError?) -> Void
+
+//订阅设备结束回调
+typealias BQNotifyCharacteristicCompletionHandler = (_ peripheral: BQPeripheral?, _ characteristic: CBCharacteristic?, _ result: BQHandlerResult) -> Void
 
 //MARK:  常用方法
 
@@ -76,7 +99,7 @@ typealias BQbluetoothReadDataBlock = (_ peripheral: CBPeripheral,_ data: Data) -
 
 class BQBlock: NSObject {
     // 用来区分不同的代理 ，通常用当前类的类名代替
-    typealias BQTagBlock = () -> String
+    public typealias BQTagBlock = () -> String
 
     //蓝牙外设状态改变
     var blockOnPeripheralStateChange: BQPeripheralStateChangeBlock?

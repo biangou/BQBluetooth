@@ -12,24 +12,29 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     //蓝牙外设名字
-    let peripheralName = "Drop_4CD09E"
+    let peripheralName = "Drop_685352"
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupBluetooth()
+        
+  
     }
 
     //设置蓝牙
     func setupBluetooth() {
         //添加代理
-       // BQBluetooth.addChannel(delegate: self)
+        BQBluetooth.isLogEnabled = false
+        BQBluetooth.addChannel(delegate: self)
        // BQBluetooth.serverUUID = "A002"
        // BQBluetooth.characteristicWriteUUID = "C304"
-        BQBluetooth.characteristicNotifyUUID = "C305"
+       // BQBluetooth.characteristicNotifyUUID = "C305"
         //开始连接
-        BQBluetooth.autoConnect(peripheralName: peripheralName)
+    
         
+        
+      //  let configure = BQConfiguration.
         
         //block回调
         
@@ -38,17 +43,17 @@ class ViewController: UIViewController {
         /// 通常会在建立外设对应特征值的监听后发送数据，以避免收不到返回数据等意外发生 这一步放在blockOnPeripheralReady
         ///
         BQBluetooth.blockOnPeripheralStateChange { (peripheral, state) in
-            let peripherlName = peripheral.name ?? "nil name"
-            
-            switch state {
-            case .connnetSuccesed:
-                print("\(peripherlName) 连接成功")
-            case .connnetFaild:
-                print("\(peripherlName) 连接失败")
-            case .disConnnet:
-                print("\(peripherlName) 断开链接")
-            default:break
-            }
+//            let peripherlName = peripheral.name ?? "nil name"
+//            
+//            switch state {
+//            case .connnetSuccesed:
+//                print("\(peripherlName) 连接成功")
+//            case .connnetFaild:
+//                print("\(peripherlName) 连接失败")
+//            case .disConnnet:
+//                print("\(peripherlName) 断开链接")
+//            default:break
+//            }
         }
         
         BQBluetooth.blockOnNewPeripheral { (peripheral, advertisementData, rssi) in
@@ -69,10 +74,29 @@ class ViewController: UIViewController {
         
     }
 
+    @IBAction func connectAction(_ sender: UIButton) {
+     //   BQBluetooth.autoConnect(peripheralName: peripheralName)
+        BQBluetooth.autoConnect(filter: { (preipheral) -> Bool in
+            if preipheral.peripheralName == "Drop_685352"
+            {
+                return true
+            }
+            return false
+        }, scantime: 3) { (periPheral, result) in
+            switch result {
+            case .success:
+                print("连接成功")
+            case .failure(let error):
+                print("连接失败\(error)")
+            }
+        }
+    }
     @IBAction func sendData(_ sender: UIButton) {
         let data = Data([0x66,0xee,0x00,0x05,0x02,0x16,0x55,0x71,0xA0])
-       // BQBluetooth.writeData(data: data)
-        BQBluetooth.writeData(peripheral: nil, data: data, serviceUUID: nil, writeUUID: "C304")
+       // BQBluetooth.sendeData(data: data)
+        BQBluetooth.sendData(peripheral: nil, data: data, serviceUUID: nil, writeUUID: "C304") { (peripheral, data, error) in
+            print("error\(error)")
+        }
     
     }
     

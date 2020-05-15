@@ -13,9 +13,8 @@ class BQPeripheral: NSObject {
     var peripheralName: String = ""
     var peripheralSN: String?
 
-    var peripheral:CBPeripheral?
+    var peripheral:CBPeripheral
     var isRady: Bool = false //设备是否处于就绪状态
-    var writeType:CBCharacteristicWriteType = .withResponse
     
     /// Intance of CentralManager which is used to the bluetooth communication
     //public unowned let manager: CBCentralManager
@@ -28,40 +27,50 @@ class BQPeripheral: NSObject {
     
     //单次传输数据包 单位字节
     //let MAX_COUNT = 2048
-
     
     //AMRK: - 蓝牙使用方法
     
-    /// 向蓝牙外设发送数据 向指定的serverUUID和 writeUUID发数据
+    /// 向蓝牙外设发送数据 向指定的serviceUUID和 writeUUID发数据
     /// - Parameter data: 待发送的数据
     /// - Parameter serviceUUID: serviceUUID
     /// - Parameter writeUUID: writeUUID
     /// - Parameter type: 发送需不需要回复该消息是否发送成功
-    func send(data: Data,serviceUUID:String?,writeUUID:String?,type:CBCharacteristicWriteType?){
-        let characteristic = searchWriteCharacteristic(serviceUUID: serviceUUID, writeUUID: writeUUID)
-        let writeType = type == nil ? BQBluetooth.writeType : type
+    func send(data: Data,
+              serviceUUID:String?,
+              writeUUID:String?,
+              type:CBCharacteristicWriteType?,
+              completionHandler:BQSendDataCompletionHandler?)
+    {
+
+        let writeType = type == nil ? BQBluetooth.configuration.writeType : type
 
         //没有符合条件的特征值则直接返回
+        let characteristic = searchWriteCharacteristic(serviceUUID: serviceUUID, writeUUID: writeUUID)
         guard let _ = characteristic else{
+            completionHandler?(self,data,BQError.invalidCharacteristic)
             return
         }
+        completionHandler?(self,data,nil)
+
         DispatchQueue.global().async {
             self.sendAsync(data: data, characteristic: characteristic!,type:writeType!)
         }
     }
 
-    /// 监听蓝牙外设返回数据
+    /// 订阅蓝牙外设
     /// - Parameter serviceUUID: serviceUUID
     /// - Parameter notifyUUID: notifyUUID
  
-    func notify(serviceUUID:String?,notifyUUID:String?){
+    func notify(serviceUUID:String?,notifyUUID:String?, completionHandler: BQNotifyCharacteristicCompletionHandler?){
         let characteristic = searchNotifyCharacteristic(serviceUUID: serviceUUID, notifyUUID: notifyUUID)
         
         //没有符合条件的特征值则直接返回
         guard let _ = characteristic else{
+            completionHandler?(self,nil, BQHandlerResult.failure(.invalidCharacteristic))
             return
         }
-        peripheral!.setNotifyValue(true, for: characteristic!)
+        completionHandler?(self,characteristic, BQHandlerResult.success)
+        peripheral.setNotifyValue(true, for: characteristic!)
     }
     
     
@@ -80,14 +89,14 @@ class BQPeripheral: NSObject {
     private func sendAsync(data: Data, characteristic: CBCharacteristic,type:CBCharacteristicWriteType) {
         var data = data
         //本设备单次传输最大字节值 ，跟手机型号有关，不同手机型号各不相同
-        let mtu:Int = self.peripheral?.maximumWriteValueLength(for: type) ?? 20
+        let mtu:Int = self.peripheral.maximumWriteValueLength(for: type)
         //如果单次数据过大则分开传递
         var bufferData:[UInt8] = []
         while data.count > 0 {
             while bufferData.count < mtu && data.count > 0 {
                 bufferData.append(data.removeFirst())
             }
-            self.peripheral?.writeValue(Data(bufferData), for: characteristic,type: type)
+            self.peripheral.writeValue(Data(bufferData), for: characteristic,type: type)
         }
     }
     
@@ -133,6 +142,7 @@ class BQPeripheral: NSObject {
         self.peripheral = peripheral
         self.advertisementData = advertisementData
         self.rssi = rssi
+        self.peripheralName = peripheral.name ?? ""
         super.init()
         peripheral.delegate = self
     }
@@ -163,14 +173,14 @@ extension BQPeripheral:CBPeripheralDelegate{
         for characteristic in service.characteristics! {
             BQPrint("外设中的特征有：\(characteristic)")
             //记录写特征
-            if let UUIDStr = BQBluetooth.characteristicWriteUUID{
-                if characteristic.uuid == CBUUID(string: UUIDStr) {
+            if let UUID = BQBluetooth.configuration.characteristicWriteUUID{
+                if characteristic.uuid == UUID {
                     characteristicWrite = characteristic
                 }
             }
             //记录读特征
-            if let UUIDStr = BQBluetooth.characteristicNotifyUUID{
-                if characteristic.uuid == CBUUID(string: UUIDStr) {
+            if let UUID = BQBluetooth.configuration.characteristicNotifyUUID{
+                if characteristic.uuid == UUID {
                     characteristicNotify = characteristic
                     // 订阅
                     peripheral.setNotifyValue(true, for: self.characteristicNotify!)
@@ -185,7 +195,7 @@ extension BQPeripheral:CBPeripheralDelegate{
 
     //订阅状态
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-    
+
         if let error = error {
             BQPrint("订阅失败: \(error)")
             return
