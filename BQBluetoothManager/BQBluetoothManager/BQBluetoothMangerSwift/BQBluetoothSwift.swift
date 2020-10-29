@@ -16,7 +16,7 @@ let BQBluetooth = BQBluetoothManager.share
 class BQBluetoothManager: NSObject {
     
     // 配置连接外设的参数，如service，character
-    var configuration = BQConfiguration()
+    var configuration = BQConfiguration.init(serviceUUID: "A002", characteristicNotifyUUID: "C305", characteristicWriteUUID: "C304", writeType: .withResponse)
         
     //是否需要打印日志  默认为可打印
     var isLogEnabled: Bool = true

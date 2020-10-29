@@ -12,7 +12,7 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     //蓝牙外设名字
-    let peripheralName = "Drop_685352"
+    let peripheralName = "Drop_409322"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,14 +28,11 @@ class ViewController: UIViewController {
         BQBluetooth.isLogEnabled = false
         BQBluetooth.addChannel(delegate: self)
        // BQBluetooth.serverUUID = "A002"
-       // BQBluetooth.characteristicWriteUUID = "C304"
-       // BQBluetooth.characteristicNotifyUUID = "C305"
+       // BQBluetooth.characteristicWriteUUID = "A002"
+       // BQBluetooth.characteristicNotifyUUID = ""A002""
         //开始连接
     
-        
-        
-      //  let configure = BQConfiguration.
-        
+    
         //block回调
         
         //蓝牙设备改变
@@ -77,7 +74,7 @@ class ViewController: UIViewController {
     @IBAction func connectAction(_ sender: UIButton) {
      //   BQBluetooth.autoConnect(peripheralName: peripheralName)
         BQBluetooth.autoConnect(filter: { (preipheral) -> Bool in
-            if preipheral.peripheralName == "Drop_685352"
+            if preipheral.peripheralName == self.peripheralName
             {
                 return true
             }
@@ -92,7 +89,9 @@ class ViewController: UIViewController {
         }
     }
     @IBAction func sendData(_ sender: UIButton) {
-        let data = Data([0x66,0xee,0x00,0x05,0x02,0x16,0x55,0x71,0xA0])
+        var data = Data([0x66,0xee,0x00,0x05,0x02,0xff,0xfd,0x02])
+        data.append(contentsOf: data.toCRCresult())
+        print("发送 string \(data.toString())")
        // BQBluetooth.sendeData(data: data)
         BQBluetooth.sendData(peripheral: nil, data: data, serviceUUID: nil, writeUUID: "C304") { (peripheral, data, error) in
             print("error\(error)")
@@ -137,6 +136,6 @@ extension ViewController: BLEDelegate{
     
     //收到的数据在此处理
     func bluetoothPeripheral(_ peripheral: CBPeripheral, didReadData data: Data){
-        print("\(data.toString())")
+        print("收到数据 \(data.toString())")
     }
 }
